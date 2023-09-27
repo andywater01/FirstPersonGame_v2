@@ -36,6 +36,14 @@ protected:
 	void Turn(float InputValue);
 	void LookUp(float InputValue);
 
+	void SprintStart();
+	void SprintEnd();
+
+	void StartCrouch();
+	void EndCrouch();
+
+	float RunSpeed = 600.0f;
+	float SprintSpeed = 900.0f;
 
 
 };
