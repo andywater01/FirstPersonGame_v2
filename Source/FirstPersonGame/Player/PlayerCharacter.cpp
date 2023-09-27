@@ -1,5 +1,6 @@
 #include "FirstPersonGame/Player/PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -12,7 +13,8 @@ APlayerCharacter::APlayerCharacter()
 	Camera->SetupAttachment(RootComponent);
 	Camera->bUsePawnControlRotation = true;
 
-	
+	SwordMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sword Mesh"));
+	SwordMesh->SetupAttachment(GetMesh(), FName("SwordSocket"));
 }
 
 // Called when the game starts or when spawned
@@ -32,6 +34,7 @@ void APlayerCharacter::Tick(float DeltaTime)
 // Called to bind functionality to input
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
+//Bindings
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	//Keyboard
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
@@ -48,9 +51,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	//Mouse
 	PlayerInputComponent->BindAxis("TurnCamera", this, &APlayerCharacter::Turn);
 	PlayerInputComponent->BindAxis("LookUp", this, &APlayerCharacter::LookUp);
-
+	//Attack
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &APlayerCharacter::StartAttack);
+	
 }
 
+//Movement
 void APlayerCharacter::MoveForward(float InputValue)
 {
 	FVector ForwardDirection = GetActorForwardVector();
@@ -92,5 +98,42 @@ void APlayerCharacter::StartCrouch()
 void APlayerCharacter::EndCrouch()
 {
 	ACharacter::UnCrouch();
+}
+
+//Attack
+void APlayerCharacter::StartAttack()
+{
+	//Call attack animation
+	if (AttackAnimation && !bIsAttacking)
+	{
+		GetMesh()->PlayAnimation(AttackAnimation, false);
+		bIsAttacking = true;
+	}
+}
+
+void APlayerCharacter::LineTrace()
+{
+	//Deal Damage to enemies in range
+	FVector StartLocation = SwordMesh->GetSocketLocation(FName("Start"));
+	FVector EndLocation = SwordMesh->GetSocketLocation(FName("End"));
+	//Get Socket Locations
+
+	//Setup Linetrace
+	FHitResult HitResult;
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+	//LineTrace
+	GetWorld()->LineTraceSingleByChannel(HitResult, StartLocation, EndLocation, ECC_Visibility, TraceParams);
+
+	//DebugLines
+	DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red, false, 1, 0, 1);
+
+	if (HitResult.bBlockingHit)
+	{
+		AActor* ActorHit = HitResult.GetActor();
+		ActorHit->Destroy();
+
+		
+	}
 }
 

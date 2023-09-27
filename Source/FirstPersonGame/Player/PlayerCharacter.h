@@ -30,6 +30,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	class UCameraComponent* Camera;
 
+	UPROPERTY(VisibleAnywhere)
+	class UStaticMeshComponent* SwordMesh;
+
+	UPROPERTY(EditAnywhere)
+	class UAnimSequence* AttackAnimation;
+
+	//Movement
 	void MoveForward(float InputValue);
 	void MoveRight(float InputValue);
 
@@ -45,5 +52,18 @@ protected:
 	float RunSpeed = 600.0f;
 	float SprintSpeed = 900.0f;
 
+	//Attack
+	void StartAttack();
+	
+
+	int Damage;
+
+public:
+
+	UFUNCTION(BlueprintCallable)
+	void LineTrace();
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsAttacking;
 
 };
